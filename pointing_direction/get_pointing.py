@@ -14,7 +14,7 @@ class Pointing:
 
         mobj = Horizons(id=301, location=500, epochs={'start': start_time, 'stop': end_time, 'step': step})
         meph = mobj.ephemerides()
-        print(meph['RA'][0], meph['DEC'][0])
+        print(meph['datetime_jd'][0])
 
         dec_difs = []
         self.get_difs(meph, dec_difs, telescope_long, telescope_lat)
@@ -60,10 +60,13 @@ class Pointing:
 
 
 if __name__ == "__main__":
-    tele = Pointing(132, -75, '2024-07-10T14:13:30', '2024-07-10T14:13:40', '10m')
+    tele = Pointing(182.13737, -23.78930, '2028-06-01T0:00:00', '2028-06-30T23:59:59', '1h')
     RAs = tele.RAs
     DECs = tele.DECs
-    print(RAs, DECs)
-    plt.plot(RAs, DECs)
+    print(DECs, RAs)
+    plt.plot(RAs, DECs, '.')
+    plt.title('Pointing RA vs Dec June 2028')
+    plt.xlabel('Dec')
+    plt.ylabel('RA')
 #    plt.savefig("pointing_plot.jpg")
     plt.show()
