@@ -14,7 +14,7 @@ class Pointing:
 
         mobj = Horizons(id=301, location=500, epochs={'start': start_time, 'stop': end_time, 'step': step})
         meph = mobj.ephemerides()
-        print(meph['datetime_jd'][0])
+
 
         dec_difs = []
         self.get_difs(meph, dec_difs, telescope_long, telescope_lat)
@@ -23,10 +23,11 @@ class Pointing:
         self.offset(pointing_RAs, pointing_DECs, dec_difs, meph['RA'], meph['DEC'])
         self.RAs = pointing_RAs
         self.DECs = pointing_DECs
+        self.times = meph['datetime_jd']
 
     def get_difs(self, ephs, dec_list, long, lat):
         for i in range(0, len(ephs['DEC'])):
- #           o_lat, o_long = self.get_origin(ephs['datetime_jd'][i])
+            #           o_lat, o_long = self.get_origin(ephs['datetime_jd'][i])
             o_lat = 0
             o_long = 0
             dec_dif = angles(lat, long, o_lat, o_long)
@@ -50,7 +51,7 @@ class Pointing:
     def offset(self, r_list, d_list, d_difs, ras, decs):
         for i in range(0, len(decs)):
             new_DEC = decs[i] + d_difs[i]
-            new_RA = ras[i] * np.cos(np.deg2rad(d_difs[i]))
+            new_RA = ras[i] #* np.cos(np.deg2rad(d_difs[i]))
             if new_DEC < -90:
                 new_DEC = -90 + ((-1 * new_DEC) - 90)
             elif new_DEC > 90:
@@ -60,13 +61,13 @@ class Pointing:
 
 
 if __name__ == "__main__":
-    tele = Pointing(182.13737, -23.78930, '2028-06-01T0:00:00', '2028-06-30T23:59:59', '1h')
+    tele = Pointing(182.13737, -23.78930, '2028-06-01T00:00:00', '2028-06-30T23:59:59', '1h')
     RAs = tele.RAs
     DECs = tele.DECs
-    print(DECs, RAs)
-    plt.plot(RAs, DECs, '.')
+    plt.plot(tele.RAs, tele.DECs, '.')
+    print(tele.RAs)
     plt.title('Pointing RA vs Dec June 2028')
-    plt.xlabel('Dec')
-    plt.ylabel('RA')
-#    plt.savefig("pointing_plot.jpg")
+    plt.xlabel('RA')
+    plt.ylabel('Dec')
+    #    plt.savefig("pointing_plot.jpg")
     plt.show()
