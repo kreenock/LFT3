@@ -42,7 +42,7 @@ for i in range(0, 2):
     times.append(timer)
     timer += 0.04166666667
 
-f = open("sublunar_points.txt", "x")
+f = open("sublunar.txt", "x")
 f.write('Elong' + ',' + 'Elat' + ',' + 'JD' + '\n')
 for i in o_longs:
     f.write(str(i) + ',' + str(o_lats[o_longs.index(i)]) + ',' + str(times[o_longs.index(i)]) + '\n')
