@@ -1,58 +1,87 @@
-import matplotlib.pyplot as plt
 from astroquery.jplhorizons import Horizons
+from astropy import units as u
+import matplotlib.pyplot as plt
+import numpy as np
 from get_pointing import Pointing
 
-tele = Pointing(182.13737, -23.78930, '2028-01-01T00:00:00', '2028-12-31T23:59:59', '1h')
-sun = Horizons(id='sun', location=500, epochs={'start': '2028-01-01T00:00:00', 'stop': '2028-12-31T23:59:59', 'step': '1h'})
-jup = Horizons(id=599, location=500, epochs={'start': '2028-01-01T00:00:00', 'stop': '2028-12-31T23:59:59', 'step': '1h'})
+sun = Horizons(id='sun', location=500,
+               epochs={'start': '2028-01-01T00:00:00', 'stop': '2028-12-31T23:59:59', 'step': '1h'})
+jup = Horizons(id=599, location=500,
+               epochs={'start': '2028-01-01T00:00:00', 'stop': '2028-12-31T23:59:59', 'step': '1h'})
 
-tRAs = tele.RAs
-tDECs = tele.DECs
-times = tele.times
+bRAs = []
+bDECs = []
+btimes = []
+
+# for the other beams
+for i in range(-5, 6, 1):
+    new_lat = -23.78930 + (i * 10)
+    if new_lat < -90:
+        new_lat = -90 + ((-1 * new_lat) - 90)
+    t = Pointing(182.13737, new_lat, '2028-01-01T00:00:00', '2028-12-31T23:59:59', '1h')
+    bRAs.extend(t.RAs)
+    bDECs.extend(t.DECs)
+    btimes.extend(t.times)
 
 sRAs = sun.ephemerides()['RA']
 sDECs = sun.ephemerides()['DEC']
+stimes = sun.ephemerides()['datetime_jd']
 
 jRAs = jup.ephemerides()['RA']
 jDECs = jup.ephemerides()['DEC']
+jtimes = jup.ephemerides()['datetime_jd']
 
 spRAs = []
 spDECs = []
 sptimes = []
 
 for i in range(0, len(sRAs)):
-    if (tRAs[i] - 10) <= sRAs[i] <= (tRAs[i] + 10):
-        if (tDECs[i] - 60) <= sDECs[i] <= (tDECs[i] + 60):
-            spRAs.append(sRAs[i])
-            spDECs.append(sDECs[i])
-            sptimes.append(times[i])
+    vis = False
+    for j in np.where(btimes == stimes[i])[0]:
+        if (bRAs[j] - 10) <= sRAs[i] <= (bRAs[j] + 10):
+            if (bDECs[j] - 60) <= sDECs[i] <= (bDECs[j] + 60):
+                vis = True
+                break
+        if vis:
+            break
+    if vis:
+        spRAs.append(sRAs[i])
+        spDECs.append(sDECs[i])
+        sptimes.append(stimes[i])
 
 jpRAs = []
 jpDECs = []
 jptimes = []
 
 for i in range(0, len(jRAs)):
-    if (tRAs[i] - 10) <= jRAs[i] <= (tRAs[i] + 10):
-        if (tDECs[i] - 60) <= jDECs[i] <= (tDECs[i] + 60):
-            jpRAs.append(jRAs[i])
-            jpDECs.append(jDECs[i])
-            jptimes.append(times[i])
+    vis = False
+    for j in np.where(btimes == jtimes[i])[0]:
+        if (bRAs[j] - 10) <= jRAs[i] <= (bRAs[j] + 10):
+            if (bDECs[j] - 60) <= sDECs[i] <= (bDECs[j] + 60):
+                vis = True
+                break
+        if vis:
+            break
+    if vis:
+        jpRAs.append(jRAs[i])
+        jpDECs.append(jDECs[i])
+        jptimes.append(jtimes[i])
 
 fig, (ax0, ax1, ax2) = plt.subplots(nrows=1, ncols=3)
 
 ax0.set_title('RA vs time')
-ax0.plot(times, tRAs, '.', color='b')
+ax0.plot(btimes, bRAs, '.', color='b')
 ax0.plot(sptimes, spRAs, '.', color='y')
 ax0.plot(jptimes, jpRAs, '.', color='r')
 
 ax1.set_title('Dec vs time')
-ax1.plot(times, tDECs, '.', color='b')
+ax1.plot(btimes, bDECs, '.', color='b')
 ax1.plot(sptimes, spDECs, '.', color='y')
 ax1.plot(jptimes, jpDECs, '.', color='r')
 
 
 ax2.set_title('RA vs Dec')
-ax2.plot(tRAs, tDECs, '.', color='b')
+ax2.plot(bRAs, bDECs, '.', color='b')
 ax2.plot(spRAs, spDECs, '.', color='y')
 ax2.plot(jpRAs, jpDECs, '.', color='r')
 
