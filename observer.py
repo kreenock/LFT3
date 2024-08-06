@@ -61,10 +61,10 @@ class Observe:
         x = sources('2028-01-01T00:00:00', '2028-12-31T23:59:59', '1h')
         hp.visufunc.projplot(self.galaxy.coord.view.galactic.l.to_value(), self.galaxy.coord.view.galactic.b.to_value(),
                              'k', linestyle=':', lonlat=True)
-        hp.visufunc.projplot(self.galaxy.coord.lowview.galactic.l.to_value(),
-                             self.galaxy.coord.lowview.galactic.b.to_value(), 'k', lonlat=True)
-        hp.visufunc.projplot(self.galaxy.coord.hiview.galactic.l.to_value(),
-                             self.galaxy.coord.hiview.galactic.b.to_value(), 'k', lonlat=True)
+        # hp.visufunc.projplot(self.galaxy.coord.lowview.galactic.l.to_value(),
+        #                      self.galaxy.coord.lowview.galactic.b.to_value(), 'k', lonlat=True)
+        # hp.visufunc.projplot(self.galaxy.coord.hiview.galactic.l.to_value(),
+        #                      self.galaxy.coord.hiview.galactic.b.to_value(), 'k', lonlat=True)
         hp.visufunc.projplot(x.staview.galactic.l.to_value(), x.staview.galactic.b.to_value(), 'wx',
                              lonlat=True)
         hp.visufunc.projplot(x.sunview.galactic.l.to_value(), x.sunview.galactic.b.to_value(), 'yo',

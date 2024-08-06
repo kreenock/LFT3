@@ -65,7 +65,7 @@ class sources:
         for i in range(0, len(jRAs)):
             vis = False
             for j in np.where(btimes == jtimes[i])[0]:
-                if (bRAs[j] - 10) <= jRAs[i] <= (bRAs[j] + 10):
+                if (bRAs[j] - 5) <= jRAs[i] <= (bRAs[j] + 5):
                     if (bDECs[j] - 60) <= sDECs[i] <= (bDECs[j] + 60):
                         vis = True
                         break
@@ -83,7 +83,7 @@ class sources:
         for i in range(0, len(jtimes)):
             vis = False
             for j in np.where(btimes == jtimes[i])[0]:
-                if (bRAs[j] - 10) <= aRA <= (bRAs[j] + 10):
+                if (bRAs[j] - 5) <= aRA <= (bRAs[j] + 5):
                     if (bDECs[j] - 60) <= aDEC <= (bDECs[j] + 60):
                         vis = True
                         break
@@ -100,8 +100,8 @@ class sources:
         for i in range(0, len(stars['RA'])):
             vis = False
             for j in range(0, len(btimes)):
-                if (bRAs[j] - 10) <= stars['RA'][i] <= (bRAs[j] + 10):
-                    if (bDECs[j] - 60) <= stars['DEC'][i] <= (bDECs[j] + 60):
+                if (bRAs[j] - 5) < stars['RA'][i] < (bRAs[j] + 5):
+                    if (bDECs[j] - 60) < stars['DEC'][i] < (bDECs[j] + 60):
                         vis = True
                         break
                 if vis:

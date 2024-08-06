@@ -70,8 +70,8 @@ class Pointing:
         hi_RAs = []
         self.view_dif(low_RAS, low_DECs, pointing_RAs, pointing_DECs, -60)
         self.view_dif(hi_RAs, hi_DECs, pointing_RAs, pointing_DECs, 60)
-        self.lowview = SkyCoord(ra=np.array(pointing_RAs) * u.degree, dec=np.array(low_DECs) * u.degree, frame='icrs')
-        self.hiview = SkyCoord(ra=np.array(pointing_RAs) * u.degree, dec=np.array(hi_DECs) * u.degree, frame='icrs')
+        self.lowview = SkyCoord(ra=np.array(low_RAS) * u.degree, dec=np.array(low_DECs) * u.degree, frame='icrs')
+        self.hiview = SkyCoord(ra=np.array(hi_RAs) * u.degree, dec=np.array(hi_DECs) * u.degree, frame='icrs')
 
     def get_difs(self, ephs, dec_list, long, lat):
         o_long, o_lat = self.get_origin()
@@ -94,7 +94,7 @@ class Pointing:
             new_DEC = decs[i] + d_difs[i]
             new_RA = ras[i] #* np.cos(np.deg2rad(d_difs[i]))
             if new_DEC < -90:
-                new_DEC = -90 + ((-1 * new_DEC) - 90)
+                new_DEC = 90.0 - abs(new_DEC)
                 new_RA = ras[i] + 180
                 if new_RA >= 360:
                     new_RA -= 360
@@ -110,15 +110,19 @@ class Pointing:
         for i in range(0, len(decs)):
             new_DEC = decs[i] + dif
             new_RA = ras[i]
-            if new_DEC < -90:
-                new_DEC = -90 + ((-1 * new_DEC) - 90)
-                new_RA = ras[i] + 180
-                if new_RA >= 360:
-                    new_RA -= 360
+            if 90 >= new_DEC >= -90:
+                d_list.append(new_DEC)
+                r_list.append(new_RA)
+
+
+            #     new_DEC = 90.0 - abs(new_DEC)
+            #     new_RA = ras[i] + 180
+            #     if new_RA >= 360:
+            #         new_RA -= 360
             elif new_DEC > 90:
-                new_DEC = 90 - (new_DEC - 90)
+                new_DEC = 90 - (new_DEC-90)
                 new_RA = ras[i] + 180
                 if new_RA >= 360:
                     new_RA -= 360
-            d_list.append(new_DEC)
-            r_list.append(new_RA)
+                d_list.append(new_DEC)
+                r_list.append(new_RA)
