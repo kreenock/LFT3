@@ -53,7 +53,7 @@ class Pointing:
             new_DEC = decs[i] + d_difs[i]
             new_RA = ras[i] #* np.cos(np.deg2rad(d_difs[i]))
             if new_DEC < -90:
-                new_DEC = -90 + ((-1 * new_DEC) - 90)
+                new_DEC = 90.0 + (new_DEC + 90)
             elif new_DEC > 90:
                 new_DEC = 90 - (new_DEC - 90)
             d_list.append(new_DEC)
@@ -61,13 +61,22 @@ class Pointing:
 
 
 if __name__ == "__main__":
-    tele = Pointing(182.13737, -23.78930, '2028-06-01T00:00:00', '2028-06-30T23:59:59', '1h')
-    RAs = tele.RAs
-    DECs = tele.DECs
-    plt.plot(tele.RAs, tele.DECs, '.')
-    print(tele.RAs)
-    plt.title('Pointing RA vs Dec June 2028')
-    plt.xlabel('RA')
-    plt.ylabel('Dec')
-    #    plt.savefig("pointing_plot.jpg")
+    tele = Pointing(182.13737, -23.78930, '2028-01-01T00:00:00', '2028-12-31T23:59:59', '1h')
+    ras = tele.RAs
+    decs = tele.DECs
+    times = tele.times
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
+    ax1.plot(times, ras, '.')
+    ax2.plot(times, decs, '.')
+    ax3.plot(decs, ras, '.')
+    ax1.set_title('Pointing RA vs time')
+    ax2.set_title('Pointing Dec vs time')
+    ax3.set_title('Pointing RA vs Dec')
+    ax1.set_xlabel('Time (jd)')
+    ax1.set_ylabel('RA (degrees)')
+    ax2.set_xlabel('Time (jd)')
+    ax2.set_ylabel('Dec (degrees)')
+    ax3.set_xlabel('Dec (degrees)')
+    ax3.set_ylabel('RA (degrees)')
+    fig.suptitle('2028')
     plt.show()

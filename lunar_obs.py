@@ -58,19 +58,15 @@ class Pointing:
 
         dec_difs = []
         self.get_difs(meph, dec_difs, telescope_long, telescope_lat)
-        pointing_RAs = []
-        pointing_DECs = []
-        self.offset(pointing_RAs, pointing_DECs, dec_difs, meph['RA'], meph['DEC'])
-        self.view = SkyCoord(ra=np.array(pointing_RAs)*u.degree, dec=np.array(pointing_DECs)*u.degree, frame='icrs')
+        self.pointing_RAs = []
+        self.pointing_DECs = []
+        self.offset(self.pointing_RAs, self.pointing_DECs, dec_difs, meph['RA'], meph['DEC'])
+        self.view = SkyCoord(ra=np.array(self.pointing_RAs)*u.degree, dec=np.array(self.pointing_DECs)*u.degree, frame='icrs')
         self.times = meph['datetime_jd']
 
-        low_DECs = []
-        low_RAS = []
-        hi_DECs = []
-        hi_RAs = []
-        self.view_dif(low_RAS, low_DECs, pointing_RAs, pointing_DECs, -60)
-        self.view_dif(hi_RAs, hi_DECs, pointing_RAs, pointing_DECs, 60)
-        self.lowview = SkyCoord(ra=np.array(low_RAS) * u.degree, dec=np.array(low_DECs) * u.degree, frame='icrs')
+        low_DECs, low_RAs = self.view_dif(self.pointing_RAs, self.pointing_DECs, -60)
+        hi_DECs, hi_RAs = self.view_dif(self.pointing_RAs, self.pointing_DECs, 60)
+        self.lowview = SkyCoord(ra=np.array(low_RAs) * u.degree, dec=np.array(low_DECs) * u.degree, frame='icrs')
         self.hiview = SkyCoord(ra=np.array(hi_RAs) * u.degree, dec=np.array(hi_DECs) * u.degree, frame='icrs')
 
     def get_difs(self, ephs, dec_list, long, lat):
@@ -94,7 +90,9 @@ class Pointing:
             new_DEC = decs[i] + d_difs[i]
             new_RA = ras[i] #* np.cos(np.deg2rad(d_difs[i]))
             if new_DEC < -90:
-                new_DEC = 90.0 - abs(new_DEC)
+                # dave, chatgpt, and i all had different opinions on this. chatgpt's method made the best looking plot
+                # so this is chatgpt's solution for new_DEC < -90
+                new_DEC = 90.0 + (new_DEC + 90)
                 new_RA = ras[i] + 180
                 if new_RA >= 360:
                     new_RA -= 360
@@ -106,23 +104,26 @@ class Pointing:
             d_list.append(new_DEC)
             r_list.append(new_RA)
 
-    def view_dif(self, r_list, d_list, ras, decs, dif):
+    def view_dif(self, ras, decs, dif):
+        new_DECs = np.array([])
+        new_RAs = np.array([])
         for i in range(0, len(decs)):
             new_DEC = decs[i] + dif
-            new_RA = ras[i]
-            if 90 >= new_DEC >= -90:
-                d_list.append(new_DEC)
-                r_list.append(new_RA)
+            new_DECs = np.append(new_DECs, new_DEC)
+            new_RAs = np.append(new_RAs, ras[i])
 
+        low_flip = np.where(new_DECs < -90)
+        # This is what I should do:
+        # new_DECs[low_flip] = 90.0 - (new_DECs[low_flip] + 90)
+        # new_RAs[low_flip] + 180
 
-            #     new_DEC = 90.0 - abs(new_DEC)
-            #     new_RA = ras[i] + 180
-            #     if new_RA >= 360:
-            #         new_RA -= 360
-            elif new_DEC > 90:
-                new_DEC = 90 - (new_DEC-90)
-                new_RA = ras[i] + 180
-                if new_RA >= 360:
-                    new_RA -= 360
-                d_list.append(new_DEC)
-                r_list.append(new_RA)
+        # However, this flipped section ends up being completely inside the higher unviewed section, and plotting an
+        # unviewed area within a bigger unviewed area is redundant. So I'm just going to remove it entirely.
+        new_DECs = np.array([i for j, i in enumerate(new_DECs) if j not in low_flip[0]])
+        new_RAs = np.array([i for j, i in enumerate(new_RAs) if j not in low_flip[0]])
+
+        hi_flip = np.where(new_DECs > 90)
+        new_DECs[hi_flip] = 90 - (new_DECs[hi_flip] - 90)
+        new_RAs[hi_flip] += 180
+        return new_DECs, new_RAs
+

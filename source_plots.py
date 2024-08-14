@@ -14,6 +14,8 @@ class sources:
                        epochs={'start': start_time, 'stop': end_time, 'step': step})
         jup = Horizons(id=599, location=500,
                        epochs={'start': start_time, 'stop': end_time, 'step': step})
+        mar = Horizons(id=299, location=500, epochs={'start': start_time, 'stop': end_time, 'step': step})
+
         aRA = 219.90206
         aDEC = -60.83399
         stars = pd.read_fwf("closest_stars.txt", dtype=None)
@@ -39,6 +41,10 @@ class sources:
         jRAs = jup.ephemerides()['RA']
         jDECs = jup.ephemerides()['DEC']
         jtimes = jup.ephemerides()['datetime_jd']
+
+        mRAs = mar.ephemerides()['RA']
+        mDECs = mar.ephemerides()['DEC']
+        mtimes = mar.ephemerides()['datetime_jd']
 
         spRAs = []
         spDECs = []
@@ -66,7 +72,7 @@ class sources:
             vis = False
             for j in np.where(btimes == jtimes[i])[0]:
                 if (bRAs[j] - 5) <= jRAs[i] <= (bRAs[j] + 5):
-                    if (bDECs[j] - 60) <= sDECs[i] <= (bDECs[j] + 60):
+                    if (bDECs[j] - 60) <= jDECs[i] <= (bDECs[j] + 60):
                         vis = True
                         break
                 if vis:
@@ -75,6 +81,24 @@ class sources:
                 jpRAs.append(jRAs[i])
                 jpDECs.append(jDECs[i])
                 jptimes.append(jtimes[i])
+
+        mpRAs = []
+        mpDECs = []
+        mptimes = []
+
+        for i in range(0, len(mRAs)):
+            vis = False
+            for j in np.where(btimes == mtimes[i])[0]:
+                if (bRAs[j] - 5) <= mRAs[i] <= (bRAs[j] + 5):
+                    if (bDECs[j] - 60) <= mDECs[i] <= (bDECs[j] + 60):
+                        vis = True
+                        break
+                if vis:
+                    break
+            if vis:
+                mpRAs.append(mRAs[i])
+                mpDECs.append(mDECs[i])
+                mptimes.append(mtimes[i])
 
         apRAs = []
         apDECs = []
@@ -100,8 +124,8 @@ class sources:
         for i in range(0, len(stars['RA'])):
             vis = False
             for j in range(0, len(btimes)):
-                if (bRAs[j] - 5) < stars['RA'][i] < (bRAs[j] + 5):
-                    if (bDECs[j] - 60) < stars['DEC'][i] < (bDECs[j] + 60):
+                if (bDECs[j] - 60.0) < stars['DEC'][i] < (bDECs[j] + 60.0):
+                    if (bRAs[j] - 0.5) < stars['RA'][i] < (bRAs[j] + 0.5):
                         vis = True
                         break
                 if vis:
@@ -110,13 +134,15 @@ class sources:
                 stpRAs.append(stars['RA'][i])
                 stpDECs.append(stars['DEC'][i])
 
-        self.sunview = SkyCoord(ra=np.array(spRAs)*u.degree, dec=np.array(spDECs)*u.degree, frame='icrs')
+        self.sunview = SkyCoord(ra=np.array(spRAs) * u.degree, dec=np.array(spDECs) * u.degree, frame='icrs')
         self.jupview = SkyCoord(ra=np.array(jpRAs) * u.degree, dec=np.array(jpDECs) * u.degree, frame='icrs')
+        self.marview = SkyCoord(ra=np.array(mpRAs) * u.degree, dec=np.array(mpDECs) * u.degree, frame='icrs')
         self.aceview = SkyCoord(ra=np.array(apRAs) * u.degree, dec=np.array(apDECs) * u.degree, frame='icrs')
         self.staview = SkyCoord(ra=np.array(stpRAs) * u.degree, dec=np.array(stpDECs) * u.degree, frame='icrs')
 
         self.sun = [spRAs, spDECs, sptimes]
         self.jup = [jpRAs, jpDECs, jptimes]
+        self.mar = [mpRAs, mpDECs, mptimes]
         self.ace = [apRAs, apDECs, aptimes]
         self.sta = [spRAs, spDECs]
 
